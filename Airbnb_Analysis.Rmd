@@ -1,0 +1,90 @@
+---
+title: "Final Project"
+author: "Haley Anderson,  Allison Merrill, Annie Zhu, Karolina Michalewska"
+subtitle: "MGSC 310, Fall 2019, Professor Hersh"
+output:
+  pdf_document: default
+  word_document: default
+  html_notebook: default
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+
+# set seed to your own favorite number
+set.seed(1818)
+options(width=70)
+
+# general rchunk code options
+opts_chunk$set(tidy.opts=list(width.wrap=50),tidy=TRUE, size = "vsmall")
+opts_chunk$set(message = FALSE,
+               warning = FALSE,
+               cache = TRUE,
+               autodep = TRUE,
+               cache.comments = FALSE,
+               collapse = TRUE,
+               fig.width = 5,  
+               fig.height = 4,
+               fig.align='center')
+```
+
+## Data Cleaning
+```{r}
+library('tidyverse')
+listings <- read_csv("seattle/listings.csv")
+
+# Data cleaning, removing unecessary variables 
+listings_clean <- listings %>% select(-c("listing_url", "last_scraped", "scrape_id", 
+                                         "thumbnail_url", "medium_url", "picture_url",
+                                         "xl_picture_url", "host_url", "host_picture_url",
+                                         "host_thumbnail_url", "is_location_exact"))
+
+# Add factors
+city_levels = unique(listings_clean$city)
+listings_clean <- listings_clean %>% mutate(
+  factor_city = factor(listings_clean$city, labels = city_levels)
+)
+```
+
+## Summary Statistics
+```{r}
+num_listing <- nrow(listings_clean)
+cat("Number of Listings in Seattle: ", num_listing)
+
+house_percent <- (nrow(listings_clean %>% filter(property_type=="House")) /  num_listing)
+cat("Percentage of Listings that are a House: ", house_percent)
+
+apartment_percent <- (nrow(listings_clean %>% filter(property_type=="Apartment")) /  num_listing)
+cat("Percentage of Listings that are an Apartment: ", apartment_percent)
+
+print(house_percent + apartment_percent)
+
+other_property_listings <- listings_clean %>% filter(property_type!="House", 
+                                                     property_type!="Apartment")
+#Some of the other property types are:
+head(other_property_listings$property_type)
+
+full_house_percent <- (nrow(listings_clean %>% filter(room_type=="Entire home/apt")) / num_listing)
+cat("Percentage of Listings that are the Full House / Apartment: ", full_house_percent)
+
+priv_room_percent <- (nrow(listings_clean %>% filter(room_type=="Private room")) / num_listing)
+cat("Percentage of Listings that are a Private Room: ", priv_room_percent)
+
+share_room_percent <- (nrow(listings_clean %>% filter(room_type=="Shared room")) / num_listing)
+cat("Percentage of Listings that are a Shared Room: ", share_room_percent)
+
+print(full_house_percent + priv_room_percent + share_room_percent)
+
+prices <- as.numeric(gsub("\\$", "", as.character(listings_clean$price)))
+avg_nightly_price <- mean(x=prices, na.rm = TRUE)
+median_nightly_price <- median(x=prices, na.rm = TRUE)
+cat("Average Nightly Price: ", avg_nightly_price, " ||  Median Nightly Price: ", median_nightly_price)
+
+max_nightly_price <- max(prices, na.rm = TRUE)
+min_nightly_price <- min(prices, na.rm = TRUE)
+cat("Minimum Nightly Price: ", min_nightly_price, " ||  Maximum Nightly Price: ", max_nightly_price)
+
+avg_num_reviews <- mean(listings_clean$number_of_reviews, na.rm = TRUE)
+avg_rating <- mean(listings_clean$review_scores_rating, na.rm = TRUE)
+cat("Average number of Reviews: ", avg_num_reviews, " ||  Average Rating out of 100: ", avg_rating)
+```
