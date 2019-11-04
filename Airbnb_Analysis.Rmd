@@ -88,3 +88,65 @@ avg_num_reviews <- mean(listings_clean$number_of_reviews, na.rm = TRUE)
 avg_rating <- mean(listings_clean$review_scores_rating, na.rm = TRUE)
 cat("Average number of Reviews: ", avg_num_reviews, " ||  Average Rating out of 100: ", avg_rating)
 ```
+
+Factor: neighborhood, neighborhood cleased, zipcode, property type, room type
+
+```{r}
+df1 <- data.frame(listings$neighbourhood_cleansed)
+nieghborhood_cleansed_levels <- unique(df1)
+nieghborhood_cleansed_factors <- factor(listings$nieghborhood_cleansed, levels = nieghborhood_cleansed_levels)
+
+df2 <- data.frame(listings$neighbourhood)
+nieghborhood_levels <- unique(df2)
+nieghborhood_factors <- factor(listings$nieghborhood, levels = nieghborhood_levels)
+
+df3 <- data.frame(listings$zipcode)
+zipcode_levels <- unique(df3)
+zipcode_factors <- factor(listings$zipcode, levels = zipcode_levels)
+
+df4 <- data.frame(listings$property_type)
+property_type_levels <- unique(df4)
+property_type_levels
+property_type_factor <- factor(listings$property_type, levels = property_type_levels)
+
+df5 <- data.frame(listings$room_type)
+room_type_levels <- unique(df5)
+room_type_factors <- factor(listings$room_type, levels = room_type_levels)
+```
+
+```{r}
+library(ggplot2)
+theme_set(theme_bw())
+
+listings$review_scores_rating <- ifelse(listings$review_scores_rating < avg_rating, "below", "above")  # above / below avg flag
+listings <- listings[order(listings$review_scores_rating), ]  # sort
+property_type_factor
+
+property_type_levels
+# Diverging Barcharts
+ggplot(listings, aes(x=property_type_levels, y=review_scores_rating, label= 'Review Score')) + 
+  geom_bar(stat='identity', aes(fill=review_scores_rating), width=.5)  +
+  scale_fill_manual(name="Review Score", 
+                    labels = c("Above Average", "Below Average"), 
+                    values = c("above"="#00ba38", "below"="#f8766d")) + 
+  labs(subtitle="Review Ratings", 
+       title= "Diverging Bars") + 
+  coord_flip()
+
+names(listings)
+listings$reviews_per_month
+listings$cleaning_fee
+
+factors <- c(0, 50, 100, 150, 200, 250, 300, 350, 400)
+listings$cleaning.cat <- cut(listings$cleaning_fee, breaks = factors)
+cleaning_fee_factors <- factor(listings$cleaning_fee, levels = factors)
+ggplot(listings) + aes(x = beds, y = cleaning_fee_factors) + geom_point()
+```
+
+
+
+
+
+
+
+
